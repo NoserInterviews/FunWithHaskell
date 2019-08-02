@@ -50,9 +50,12 @@ class Scheduler(private val name: String) {
         }
 
         private fun generatePhases(period: Long) : Seq<Long> {
-            (0 until period).forEach {
-                TODO()
+            var i = period
+            var res = Seq.empty<Long>()
+            while (--i >= 0) {
+                res = res.prepend(i)
             }
+            return res
         }
 
         private fun maxExecutions(phases : Seq<Long>, tasks: Seq<Task>) : Seq<Pair<Long,Int>> = TODO()
