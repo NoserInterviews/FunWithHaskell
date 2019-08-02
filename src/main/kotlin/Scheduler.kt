@@ -25,7 +25,17 @@ class Scheduler(private val name: String) {
 
     private fun executeTasks(epochSecs: Long) {
 
-        println(tasks)
+        println("$epochSecs")
+        tasks
+            .filter { shouldExecute(epochSecs,it) }
+            .forEach {
+                print("Executing $it...")
+                it.runnable()
+                println("done")
+            }
+
+        println()
+
     }
 
     private fun shouldExecute(epochSecs: Long, task: Task) = epochSecs % task.period == task.phase

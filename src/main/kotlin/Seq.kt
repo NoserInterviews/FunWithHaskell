@@ -2,7 +2,30 @@ package com.noser.haskell
 
 sealed class Seq<V : Any> {
 
+    abstract fun head() : V
+
+    abstract fun tail() : Seq<V>
+
     fun prepend(v: V): Seq<V> = Cons(v, this)
+
+    fun filter(predicate : (V) -> Boolean) : Seq<V> {
+
+        var vs = this
+        var res : Seq<V> = empty()
+        while (vs != EMPTY) {
+            if (predicate(vs.head())) res = res.prepend(vs.head())
+            vs = vs.tail()
+        }
+        return res // ist invertiert!!!!
+    }
+
+    fun forEach(consumer : (V) -> Unit) {
+        var vs = this
+        while (vs != EMPTY) {
+            consumer(vs.head())
+            vs = vs.tail()
+        }
+    }
 
     companion object {
         private val EMPTY: Seq<Nothing> = Empty()
@@ -15,10 +38,18 @@ sealed class Seq<V : Any> {
 
     private class Empty<V : Any> : Seq<V>() {
 
+        override fun head(): V = throw UnsupportedOperationException("head() on empty Seq called")
+
+        override fun tail() : Seq<V> = throw UnsupportedOperationException("head() on empty Seq called")
+
         override fun toString(): String = "[]"
     }
 
     private class Cons<V : Any>(private val head: V, private val tail: Seq<V>) : Seq<V>() {
+
+        override fun head(): V = head
+
+        override fun tail(): Seq<V> = tail
 
         override fun toString(): String {
             return "[$head,...]"
