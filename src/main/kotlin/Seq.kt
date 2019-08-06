@@ -1,10 +1,13 @@
 package com.noser.haskell
 
+@Suppress("unused")
 sealed class Seq<V : Any> {
 
     abstract fun head() : V
 
     abstract fun tail() : Seq<V>
+
+    abstract fun isEmpty() : Boolean
 
     fun prepend(v: V): Seq<V> = Cons(v, this)
 
@@ -42,6 +45,8 @@ sealed class Seq<V : Any> {
 
         override fun tail() : Seq<V> = throw UnsupportedOperationException("head() on empty Seq called")
 
+        override fun isEmpty(): Boolean = true
+
         override fun toString(): String = "[]"
     }
 
@@ -50,6 +55,8 @@ sealed class Seq<V : Any> {
         override fun head(): V = head
 
         override fun tail(): Seq<V> = tail
+
+        override fun isEmpty(): Boolean = false
 
         override fun toString(): String {
             return "[$head,...]"

@@ -20,23 +20,25 @@ class Scheduler(private val name: String) {
 
         val task = Task(id, period, 0L, runnable)
         tasks = tasks.prepend(task)
-        return Maybe.just(task)
+        return Maybe.of(task)
     }
 
     private fun executeTasks(epochSecs: Long) {
 
         println("$epochSecs")
-        tasks
-            .filter { shouldExecute(epochSecs,it) }
-            .forEach {
-                print("Executing $it...")
-                it.runnable()
+
+        var remaining = tasks
+        while (!remaining.isEmpty()) {
+            if (shouldExecute(epochSecs,remaining.head())) {
+                print("Executing ${remaining.head()}...")
+                remaining.head().runnable()
                 println("done")
             }
-
+            remaining = remaining.tail()
+        }
         println()
-
     }
 
-    private fun shouldExecute(epochSecs: Long, task: Task) = epochSecs % task.period == task.phase
+    private fun shouldExecute(epochSecs: Long, task: Task) =
+        epochSecs % task.period == task.phase
 }
