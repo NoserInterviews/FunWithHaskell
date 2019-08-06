@@ -4,10 +4,10 @@ import java.time.Instant
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-private typealias Period = Long
-private typealias Phase = Long
-private typealias Index = Int
-private typealias Execution = Int
+typealias Period = Long
+typealias Phase = Long
+typealias Index = Long
+typealias Execution = Int
 
 class Scheduler(private val name: String) {
 
@@ -21,13 +21,13 @@ class Scheduler(private val name: String) {
     private var tasks: Seq<Task> = Seq.empty()
 
     @Synchronized
-    fun addTask(id: String, period: Long, runnable: () -> Unit): Maybe<Task> {
+    fun addTask(id: String, period: Period, runnable: () -> Unit): Maybe<Task> {
 
-        if (period < 1) return Maybe.nothing()
+        if (period < 1L) return Maybe.nothing()
 
         // TODO if id already present then Maybe.nothing()
 
-        val task = Task(id, period, findBestPhase(tasks,period), runnable)
+        val task = Task(id, period, findBestPhase(tasks, period), runnable)
         tasks = tasks.prepend(task)
         return Maybe.just(task)
     }
@@ -36,7 +36,7 @@ class Scheduler(private val name: String) {
 
         println("$epochSecs")
         tasks
-            .filter { shouldExecute(epochSecs,it) }
+            .filter { shouldExecute(epochSecs, it) }
             .forEach {
                 print("Executing $it...")
                 it.runnable()
@@ -48,14 +48,14 @@ class Scheduler(private val name: String) {
 
     companion object {
 
-        private fun findBestPhase(tasks: Seq<Task>, period: Period) : Phase {
+        private fun findBestPhase(tasks: Seq<Task>, period: Period): Phase {
 
             val phases = generatePhases(period)
             val maxExecutions = maxExecutions(period, phases, tasks)
             return bestPhase(maxExecutions)
         }
 
-        private fun generatePhases(period: Period) : Seq<Phase> {
+        private fun generatePhases(period: Period): Seq<Phase> {
             var i = period
             var res = Seq.empty<Phase>()
             while (--i >= 0) {
@@ -64,7 +64,7 @@ class Scheduler(private val name: String) {
             return res
         }
 
-        private fun maxExecutions(period : Period, phases : Seq<Phase>, tasks: Seq<Task>) : Seq<Pair<Phase,Execution>> {
+        private fun maxExecutions(period: Period, phases: Seq<Phase>, tasks: Seq<Task>): Seq<Pair<Phase, Execution>> {
 
             val maxIndex = maxIndex(periods(tasks).prepend(period))
 
@@ -77,27 +77,33 @@ class Scheduler(private val name: String) {
             TODO()
         }
 
-        private fun maxIndex(periods : Seq<Period>) : Index {
+        private fun periods(tasks: Seq<Task>): Seq<Period> {
+
+            var res: Seq<Period> = Seq.empty()
+            var vs: Seq<Task> = tasks
+            while (!vs.isEmpty()) {
+                res = res.prepend((Task::period)(vs.head()))
+                vs = vs.tail()
+            }
+            return res // ergebnis ist invertiert
+        }
+
+        private fun maxIndex(periods: Seq<Period>): Index {
+
             TODO("multiply all periods")
             //     werfe duplikate raus
             //     multipliziere sie alle miteinander
         }
 
-        private fun periods(tasks: Seq<Task>) : Seq<Phase> {
-
-
-
-            TODO("find all distinct periods")
-        }
-
-        private fun generateIndices(maxIndex : Index) : Seq<Index> {
+        private fun generateIndices(maxIndex: Index): Seq<Index> {
             TODO("0,1,2,...maxIndex-1")
         }
 
-        private fun bestPhase(maxExecutions : Seq<Pair<Phase,Execution>>) : Long = TODO()
+        private fun bestPhase(maxExecutions: Seq<Pair<Phase, Execution>>): Phase = TODO()
 
-        private fun countExecutions(index: Index, tasks: Seq<Task>) : Int = TODO("if shouldExecute +1")
+        private fun countExecutions(index: Index, tasks: Seq<Task>): Execution = TODO("if shouldExecute +1")
 
-        private fun shouldExecute(epochSecs: Long, task: Task) = epochSecs % task.period == task.phase
+        private fun shouldExecute(epochSecs: Long, task: Task) =
+            epochSecs % task.period == task.phase
     }
 }

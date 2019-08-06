@@ -8,11 +8,11 @@ class Main {
 
         Scheduler scheduler = new Scheduler("important-stuff");
 
-        scheduler.addTask("task1", 3, () -> {
+        scheduler.addTask("task1", 3L, () -> {
             System.out.print("dududu...");
             return Unit.INSTANCE;
         });
-        scheduler.addTask("task2", 3, () -> {
+        scheduler.addTask("task2", 3L, () -> {
             System.out.print("dadada...");
             return Unit.INSTANCE;
         });
