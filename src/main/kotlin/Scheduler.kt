@@ -4,6 +4,11 @@ import java.time.Instant
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
+private typealias Period = Long
+private typealias Phase = Long
+private typealias Index = Int
+private typealias Execution = Int
+
 class Scheduler(private val name: String) {
 
     init {
@@ -19,6 +24,8 @@ class Scheduler(private val name: String) {
     fun addTask(id: String, period: Long, runnable: () -> Unit): Maybe<Task> {
 
         if (period < 1) return Maybe.nothing()
+
+        // TODO if id already present then Maybe.nothing()
 
         val task = Task(id, period, findBestPhase(tasks,period), runnable)
         tasks = tasks.prepend(task)
@@ -37,41 +44,60 @@ class Scheduler(private val name: String) {
             }
 
         println()
-
     }
 
     companion object {
 
-        private fun findBestPhase(tasks: Seq<Task>, period: Long) : Long {
+        private fun findBestPhase(tasks: Seq<Task>, period: Period) : Phase {
 
             val phases = generatePhases(period)
-            val maxExecutions = maxExecutions(phases, tasks)
+            val maxExecutions = maxExecutions(period, phases, tasks)
             return bestPhase(maxExecutions)
         }
 
-        private fun generatePhases(period: Long) : Seq<Long> {
+        private fun generatePhases(period: Period) : Seq<Phase> {
             var i = period
-            var res = Seq.empty<Long>()
+            var res = Seq.empty<Phase>()
             while (--i >= 0) {
                 res = res.prepend(i)
             }
             return res
         }
 
-        private fun maxExecutions(phases : Seq<Long>, tasks: Seq<Task>) : Seq<Pair<Long,Int>> = TODO()
+        private fun maxExecutions(period : Period, phases : Seq<Phase>, tasks: Seq<Task>) : Seq<Pair<Phase,Execution>> {
 
-        private fun bestPhase(maxExecutions : Seq<Pair<Long,Int>>) : Long = TODO()
+            val maxIndex = maxIndex(periods(tasks).prepend(period))
 
-        private fun countExecutions(tasks : Seq<Task>, index: Long) : Int = TODO("if shouldExecute +1")
+            val indices = generateIndices(maxIndex)
 
-        private fun generateIndices(maxIndex : Long) : Seq<Long> = TODO("0,1,2,...maxIndex-1")
+            // nimm die erste phase und gehe von anfang an durch die indizes
+            //     bei jedem index gucke wieviele tasks ausgeführt würden und merke dir das max
+            //     wiederhole das für jede phase
 
-        private fun maxIndex(periods : Seq<Long>) : Long = TODO("multiply all periods")
+            TODO()
+        }
 
-        private fun periods(tasks: Seq<Task>) : Seq<Long> = TODO("find all distinct periods")
+        private fun maxIndex(periods : Seq<Period>) : Index {
+            TODO("multiply all periods")
+            //     werfe duplikate raus
+            //     multipliziere sie alle miteinander
+        }
+
+        private fun periods(tasks: Seq<Task>) : Seq<Phase> {
+
+
+
+            TODO("find all distinct periods")
+        }
+
+        private fun generateIndices(maxIndex : Index) : Seq<Index> {
+            TODO("0,1,2,...maxIndex-1")
+        }
+
+        private fun bestPhase(maxExecutions : Seq<Pair<Phase,Execution>>) : Long = TODO()
+
+        private fun countExecutions(index: Index, tasks: Seq<Task>) : Int = TODO("if shouldExecute +1")
 
         private fun shouldExecute(epochSecs: Long, task: Task) = epochSecs % task.period == task.phase
     }
-
-
 }
