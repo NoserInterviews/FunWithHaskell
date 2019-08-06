@@ -36,6 +36,30 @@ sealed class Seq<V : Any> {
         fun <V : Any> empty(): Seq<V> = EMPTY as Seq<V>
 
         fun <V : Any> of(v: V): Seq<V> = Cons(v, empty())
+
+
+        fun <U : Any, V : Any> map(f : (V) -> U, vs : Seq<V>) : Seq<U> {
+
+            var res : Seq<U> = empty()
+            var rem = vs
+            while (!rem.isEmpty()) {
+                val head = rem.head()
+                res = Cons(f(head),res)
+                rem = rem.tail()
+            }
+            return res
+        }
+
+        fun <U, V : Any> foldl(init : U, f : (U,V) -> U, vs : Seq<V>) : U {
+
+            var res = init
+            var rem = vs
+            while (!rem.isEmpty()) {
+                res = f(res,rem.head())
+                rem = rem.tail()
+            }
+            return res
+        }
     }
 
     private class Empty<V : Any> : Seq<V>() {
