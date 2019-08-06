@@ -20,7 +20,7 @@ class Scheduler(private val name: String) {
 
         val task = Task(id, period, 0L, runnable)
         tasks = tasks.prepend(task)
-        return Maybe.just(task)
+        return Maybe.of(task)
     }
 
     private fun executeTasks(epochSecs: Long) {
