@@ -39,7 +39,7 @@ sealed class Seq<V : Any> {
     fun <U : Comparable<U>> maxBy(f: (V) -> U): Maybe<V> =
         if (isEmpty())
             Maybe.nothing()
-        else Maybe.of(
+        else Maybe.maybe(
             tail()
                 .foldl(Pair(head(), f(head()))) { pair, v ->
                     val fV = f(v)
@@ -50,7 +50,7 @@ sealed class Seq<V : Any> {
     fun <U : Comparable<U>> minBy(f: (V) -> U): Maybe<V> =
         if (isEmpty())
             Maybe.nothing()
-        else Maybe.of(
+        else Maybe.maybe(
             tail()
                 .foldl(Pair(head(), f(head()))) { pair, v ->
                     val fV = f(v)
@@ -112,7 +112,10 @@ sealed class Seq<V : Any> {
             }
 
         fun <V : Any> flip(mvs: Seq<Maybe<V>>): Maybe<Seq<V>> =
-            mvs.foldr(Maybe.nothing()) { mv, memo -> memo.flatMap { vs -> mv.map(vs::prepend) } }
+            mvs.foldr(Maybe.just(empty())) { mv, memo -> memo.flatMap { vs -> mv.map(vs::prepend) } }
+
+        fun <V : Any> flip(tvs: Seq<Try<V>>): Try<Seq<V>> =
+            tvs.foldr(Try.success(empty())) { tv, memo -> memo.flatMap { vs -> tv.map(vs::prepend) } }
     }
 
     private class Empty<V : Any> : Seq<V>() {
