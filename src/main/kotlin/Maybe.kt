@@ -9,7 +9,7 @@ sealed class Maybe<V : Any> {
         @Suppress("UNCHECKED_CAST")
         fun <V : Any> nothing(): Maybe<V> = NOT as Maybe<V>
 
-        fun <V : Any> of(v: V?): Maybe<V> = if (v != null) Just(v) else nothing()
+        fun <V : Any> maybe(v: V?): Maybe<V> = if (v != null) Just(v) else nothing()
     }
 
     private class Not<V : Any> : Maybe<V>() {
