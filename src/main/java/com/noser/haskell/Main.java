@@ -9,19 +9,19 @@ class Main {
         Scheduler scheduler = new Scheduler("important-stuff");
 
         scheduler.addTask("task1", 3L, () -> {
-            System.out.print("de do do do...");
+            System.out.print(System.currentTimeMillis() + "-task1: de do do do...");
             return Unit.INSTANCE;
         });
         scheduler.addTask("task2", 3L, () -> {
-            System.out.print("de da da da...");
+            System.out.print(System.currentTimeMillis() + "-task2: de da da da...");
             return Unit.INSTANCE;
         });
         scheduler.addTask("task3", 3L, () -> {
-            System.out.print("is all I want...");
+            System.out.print(System.currentTimeMillis() + "-task3: is all I want...");
             return Unit.INSTANCE;
         });
         scheduler.addTask("task4", 3L, () -> {
-            System.out.print("to say to you...");
+            System.out.print(System.currentTimeMillis() + "-task4: to say to you...");
             return Unit.INSTANCE;
         });
 

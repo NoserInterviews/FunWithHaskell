@@ -2,9 +2,15 @@ package com.noser.haskell
 
 sealed class Maybe<V : Any> {
 
-    abstract fun getOrThrow() : V
+    abstract fun getOrThrow(): V
 
     abstract fun getOrElse(alt: V): V
+
+    abstract fun <W : Any> flatMap(f: (V) -> Maybe<W>): Maybe<W>
+
+    abstract fun forEach(f: (V) -> Unit)
+
+    fun <W : Any> map(f: (V) -> W): Maybe<W> = flatMap { just(f(it)) }
 
     companion object {
 
@@ -24,6 +30,10 @@ sealed class Maybe<V : Any> {
 
         override fun getOrElse(alt: V): V = alt
 
+        override fun <W : Any> flatMap(f: (V) -> Maybe<W>): Maybe<W> = nothing()
+
+        override fun forEach(f: (V) -> Unit) {}
+
         override fun toString(): String = "Nothing"
 
         override fun equals(other: Any?): Boolean = this === other
@@ -36,6 +46,10 @@ sealed class Maybe<V : Any> {
         override fun getOrThrow(): V = value
 
         override fun getOrElse(alt: V): V = value
+
+        override fun <W : Any> flatMap(f: (V) -> Maybe<W>): Maybe<W> = f(value)
+
+        override fun forEach(f: (V) -> Unit) = f(value)
 
         override fun toString(): String = "Just($value)"
 

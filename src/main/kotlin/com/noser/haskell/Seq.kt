@@ -63,7 +63,7 @@ sealed class Seq<V : Any> {
         fun go(rem: Seq<V>): U =
             when {
                 rem.isEmpty() -> init
-                else -> f(rem.head(), go(rem.tail()))
+                else          -> f(rem.head(), go(rem.tail()))
             }
 
         return if (size() > 1000) reverse().foldl(init, flipArgs(f)) else go(this)
@@ -76,7 +76,7 @@ sealed class Seq<V : Any> {
         tailrec fun go(memo: U, vs: Seq<V>): U =
             when {
                 vs.isEmpty() -> memo
-                else -> go(f(memo, vs.head()), vs.tail())
+                else         -> go(f(memo, vs.head()), vs.tail())
             }
 
         return go(init, this)
@@ -161,8 +161,8 @@ sealed class Seq<V : Any> {
                 when {
                     l.isEmpty() && r.isEmpty() -> true
                     l.isEmpty() || r.isEmpty() -> false
-                    l.head() == r.head() -> go(l.tail(), r.tail())
-                    else -> false
+                    l.head() == r.head()       -> go(l.tail(), r.tail())
+                    else                       -> false
                 }
 
             return go(this, other)

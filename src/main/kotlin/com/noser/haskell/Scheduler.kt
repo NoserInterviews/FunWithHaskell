@@ -10,9 +10,11 @@ typealias Phase = Long
 class Scheduler(private val name: String) {
 
     init {
-        Executors.newSingleThreadScheduledExecutor {
-            Thread(it, "$name-Thread").apply { isDaemon = true }
-        }.scheduleAtFixedRate({ executeTasks(Instant.now().epochSecond) }, 2L, 1L, TimeUnit.SECONDS)
+        Executors
+            .newSingleThreadScheduledExecutor {
+                Thread(it, "$name-Thread").apply { isDaemon = true }
+            }
+            .scheduleAtFixedRate({ executeTasks(Instant.now().epochSecond) }, 2L, 1L, TimeUnit.SECONDS)
     }
 
     @Volatile
@@ -21,15 +23,16 @@ class Scheduler(private val name: String) {
     @Synchronized
     fun addTask(id: String, period: Period, runnable: () -> Unit): Maybe<Task> {
 
-        if (period < 1L) return Maybe.nothing()
+        val taskMaybe = when {
+            period < 1L               -> Maybe.nothing()
+            tasks.any { it.id == id } -> Maybe.nothing()
+            else                      -> Maybe.just(findBestPhase(tasks, period))
+        }
+            .map { Task(id, period, it, runnable) }
 
-        if (tasks.any { it.id == id }) return Maybe.nothing()
+        taskMaybe.forEach { tasks = tasks.prepend(it) }
 
-        val phase = findBestPhase(tasks, period)
-        val task = Task(id, period, phase, runnable)
-        println("Adding task $task")
-        tasks = tasks.prepend(task)
-        return Maybe.just(task)
+        return taskMaybe
     }
 
     private fun executeTasks(epochSecs: Long) {
@@ -37,11 +40,7 @@ class Scheduler(private val name: String) {
         println("$epochSecs")
         tasks
             .filter { shouldExecute(epochSecs, it) }
-            .forEach {
-                print("Executing $it...")
-                it.runnable()
-                println("done")
-            }
+            .forEach { it.runnable() }
 
         println()
     }
@@ -86,7 +85,7 @@ class Scheduler(private val name: String) {
                 if (shouldExecute(sec, task)) memo + 1 else memo
             }
 
-        private fun shouldExecute(epochSecs: Long, task : Task) =
+        private fun shouldExecute(epochSecs: Long, task: Task) =
             epochSecs % task.period == task.phase
     }
 }
