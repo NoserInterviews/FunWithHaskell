@@ -10,6 +10,8 @@ sealed class Maybe<V : Any> {
         fun <V : Any> nothing(): Maybe<V> = NOT as Maybe<V>
 
         fun <V : Any> just(v: V): Maybe<V> = Just(v)
+
+        fun <V : Any> maybe(v : V?) : Maybe<V> = if (v != null) just(v) else nothing()
     }
 
     private class Not<V : Any> : Maybe<V>() {
