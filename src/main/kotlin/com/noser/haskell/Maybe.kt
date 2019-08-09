@@ -4,7 +4,7 @@ sealed class Maybe<V : Any> {
 
     abstract fun getOrThrow(): V
 
-    abstract fun getOrElse(alt: V): V
+    abstract fun getOrElse(alt: V?): V?
 
     abstract fun <W : Any> flatMap(f: (V) -> Maybe<W>): Maybe<W>
 
@@ -28,7 +28,7 @@ sealed class Maybe<V : Any> {
 
         override fun getOrThrow(): V = throw NoSuchElementException("getOrThrow() called on Nothing")
 
-        override fun getOrElse(alt: V): V = alt
+        override fun getOrElse(alt: V?): V? = alt
 
         override fun <W : Any> flatMap(f: (V) -> Maybe<W>): Maybe<W> = nothing()
 
@@ -45,7 +45,7 @@ sealed class Maybe<V : Any> {
 
         override fun getOrThrow(): V = value
 
-        override fun getOrElse(alt: V): V = value
+        override fun getOrElse(alt: V?): V? = value
 
         override fun <W : Any> flatMap(f: (V) -> Maybe<W>): Maybe<W> = f(value)
 

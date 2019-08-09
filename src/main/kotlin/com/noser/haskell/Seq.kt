@@ -110,6 +110,9 @@ sealed class Seq<V : Any> {
                 }
                 res
             }
+
+        fun <V : Any> flip(mvs: Seq<Maybe<V>>): Maybe<Seq<V>> =
+            mvs.foldr(Maybe.nothing()) { mv, memo -> memo.flatMap { vs -> mv.map(vs::prepend) } }
     }
 
     private class Empty<V : Any> : Seq<V>() {
