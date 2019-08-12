@@ -63,7 +63,7 @@ sealed class Seq<V : Any> {
         fun go(rem: Seq<V>): U =
             when {
                 rem.isEmpty() -> init
-                else          -> f(rem.head(), go(rem.tail()))
+                else -> f(rem.head(), go(rem.tail()))
             }
 
         return if (size() > 1000) reverse().foldl(init, flipArgs(f)) else go(this)
@@ -76,11 +76,12 @@ sealed class Seq<V : Any> {
         tailrec fun go(memo: U, vs: Seq<V>): U =
             when {
                 vs.isEmpty() -> memo
-                else         -> go(f(memo, vs.head()), vs.tail())
+                else -> go(f(memo, vs.head()), vs.tail())
             }
 
         return go(init, this)
     }
+
 
     companion object {
         private val EMPTY: Seq<Nothing> = Empty()
@@ -92,30 +93,42 @@ sealed class Seq<V : Any> {
 
         fun <V : Any> ofAll(vararg vs: V): Seq<V> {
 
-            var res = empty<V>()
-            (vs.size - 1 downTo 0).forEach {
-                res = res.prepend(vs[it])
-            }
-            return res
+            tailrec fun go(memo: Seq<V>, i: Int): Seq<V> =
+                when (i) {
+                    -1 -> memo
+                    else -> go(memo.prepend(vs[i]), i - 1)
+                }
+
+            return go(empty(), vs.size - 1)
         }
 
-        fun range(start: Long, endExcl: Long): Seq<Long> =
-            if (start > endExcl)
-                range(endExcl + 1, start + 1).reverse()
-            else {
-                var i = endExcl
-                var res = empty<Long>()
-                while (--i >= start) {
-                    res = res.prepend(i)
+        fun range(start: Long, end: Long): Seq<Long> {
+
+            fun go(memo: Seq<Long>, end: Long): Seq<Long> =
+                when {
+                    end < start -> memo
+                    else -> go(memo.prepend(end), end - 1)
                 }
-                res
-            }
+
+            return go(empty(), end)
+        }
+
+        fun rangeDown(start: Long, end: Long): Seq<Long> {
+
+            fun go(memo: Seq<Long>, end : Long): Seq<Long> =
+                when {
+                    end > start -> memo
+                    else -> go(memo.prepend(end), end + 1)
+                }
+
+            return go(empty(), end)
+        }
 
         fun <V : Any> flip(mvs: Seq<Maybe<V>>): Maybe<Seq<V>> =
-            mvs.foldr(Maybe.just(empty())) { mv, memo -> memo.flatMap { vs -> mv.map(vs::prepend) } }
+            mvs.foldr(Maybe.just(empty<V>())) { mv, memo -> memo.flatMap { vs -> mv.map(vs::prepend) } }
 
         fun <V : Any> flip(tvs: Seq<Try<V>>): Try<Seq<V>> =
-            tvs.foldr(Try.success(empty())) { tv, memo -> memo.flatMap { vs -> tv.map(vs::prepend) } }
+            tvs.foldr(Try.success(empty<V>())) { tv, memo -> memo.flatMap { vs -> tv.map(vs::prepend) } }
     }
 
     private class Empty<V : Any> : Seq<V>() {
@@ -167,8 +180,8 @@ sealed class Seq<V : Any> {
                 when {
                     l.isEmpty() && r.isEmpty() -> true
                     l.isEmpty() || r.isEmpty() -> false
-                    l.head() == r.head()       -> go(l.tail(), r.tail())
-                    else                       -> false
+                    l.head() == r.head() -> go(l.tail(), r.tail())
+                    else -> false
                 }
 
             return go(this, other)

@@ -25,5 +25,4 @@ sealed class Try<V : Any> {
 
         override fun <W : Any> flatMap(f: (V) -> Try<W>): Try<W> = Failure(t)
     }
-
 }

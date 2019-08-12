@@ -9,13 +9,13 @@ internal class SeqTest {
     fun testRange() {
 
         assertEquals(
-            Seq.ofAll(0L, 1L, 2L),
+            Seq.ofAll(0L, 1L, 2L, 3L),
             Seq.range(0, 3)
         )
 
         assertEquals(
-            Seq.ofAll(2L, 1L, 0L),
-            Seq.range(2, -1)
+            Seq.ofAll(2L, 1L, 0L, -1L),
+            Seq.rangeDown(2, -1)
         )
     }
 
