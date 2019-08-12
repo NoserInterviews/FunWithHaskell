@@ -13,6 +13,8 @@ sealed class Seq<V : Any> {
 
     fun prepend(v: V): Seq<V> = Cons(v, this)
 
+    fun prependAll(vs: Seq<V>): Seq<V> = vs.foldr(this, flipArgs(Seq<V>::prepend))
+
     fun filter(predicate: (V) -> Boolean): Seq<V> =
         foldr(empty()) { v, seq -> if (predicate(v)) seq.prepend(v) else seq }
 
@@ -58,6 +60,17 @@ sealed class Seq<V : Any> {
                 }.first
         )
 
+    fun take(n: Int): Seq<V> {
+
+        fun go(m: Int, rem: Seq<V>): Seq<V> =
+            when {
+                m <= 0 || rem.isEmpty() -> empty()
+                else -> Cons(rem.head(), go(m - 1, rem.tail()))
+            }
+
+        return go(n, this)
+    }
+
     fun <U> foldr(init: U, f: (V, U) -> U): U {
 
         fun go(rem: Seq<V>): U =
@@ -82,6 +95,16 @@ sealed class Seq<V : Any> {
         return go(init, this)
     }
 
+    /** CHECKOUT */
+    override fun toString(): String {
+
+        val cutoff = 5
+        val shortened =
+            if (size() > cutoff) of("...").prependAll(take(cutoff).map { it.toString() })
+            else this.map { it.toString() }
+
+        return "[" + shortened.tail().foldl(shortened.head()) { memo, s -> "$memo,$s" } + "]"
+    }
 
     companion object {
         private val EMPTY: Seq<Nothing> = Empty()
@@ -115,7 +138,7 @@ sealed class Seq<V : Any> {
 
         fun rangeDown(start: Long, end: Long): Seq<Long> {
 
-            fun go(memo: Seq<Long>, end : Long): Seq<Long> =
+            fun go(memo: Seq<Long>, end: Long): Seq<Long> =
                 when {
                     end > start -> memo
                     else -> go(memo.prepend(end), end + 1)
@@ -124,6 +147,7 @@ sealed class Seq<V : Any> {
             return go(empty(), end)
         }
 
+        /** CHECKOUT */
         fun <V : Any> flip(mvs: Seq<Maybe<V>>): Maybe<Seq<V>> =
             mvs.foldr(Maybe.just(empty<V>())) { mv, memo -> memo.flatMap { vs -> mv.map(vs::prepend) } }
 
@@ -165,10 +189,6 @@ sealed class Seq<V : Any> {
         override fun isEmpty(): Boolean = false
 
         override fun size(): Int = size
-
-        override fun toString(): String {
-            return "[$head,...]"
-        }
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
