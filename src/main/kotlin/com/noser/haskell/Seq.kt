@@ -92,11 +92,13 @@ sealed class Seq<V : Any> {
 
         fun <V : Any> ofAll(vararg vs: V): Seq<V> {
 
-            var res = empty<V>()
-            (vs.size - 1 downTo 0).forEach {
-                res = res.prepend(vs[it])
-            }
-            return res
+            tailrec fun go(memo: Seq<V>, i: Int): Seq<V> =
+                when (i) {
+                    -1 -> memo
+                    else -> go(memo.prepend(vs[i]), i - 1)
+                }
+
+            return go(empty(), vs.size - 1)
         }
 
         fun range(start: Long, end: Long): Seq<Long> {
