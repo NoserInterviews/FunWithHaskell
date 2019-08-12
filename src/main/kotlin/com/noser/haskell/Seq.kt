@@ -99,17 +99,16 @@ sealed class Seq<V : Any> {
             return res
         }
 
-        fun range(start: Long, endExcl: Long): Seq<Long> =
-            if (start > endExcl)
-                range(endExcl + 1, start + 1).reverse()
-            else {
-                var i = endExcl
-                var res = empty<Long>()
-                while (--i >= start) {
-                    res = res.prepend(i)
+        fun range(start: Long, end: Long): Seq<Long> {
+
+            fun go(memo: Seq<Long>, end: Long): Seq<Long> =
+                when {
+                    end < start -> memo
+                    else -> go(memo.prepend(end), end - 1)
                 }
-                res
-            }
+
+            return go(empty(), end)
+        }
     }
 
     private class Empty<V : Any> : Seq<V>() {
