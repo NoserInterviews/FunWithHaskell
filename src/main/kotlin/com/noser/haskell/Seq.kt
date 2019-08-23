@@ -11,6 +11,10 @@ sealed class Seq<V : Any> {
 
     abstract fun size(): Int
 
+    abstract operator fun component1() : V
+
+    abstract operator fun component2() : Seq<V>
+
     fun prepend(v: V): Seq<V> = Cons(v, this)
 
     fun prependAll(vs: Seq<V>): Seq<V> = vs.foldr(this, flipArgs(Seq<V>::prepend))
@@ -165,6 +169,10 @@ sealed class Seq<V : Any> {
 
         override fun size(): Int = 0
 
+        override fun component1(): V = throw UnsupportedOperationException("component1() on empty Seq called")
+
+        override fun component2(): Seq<V> = throw UnsupportedOperationException("component2() on empty Seq called")
+
         override fun toString(): String = "[]"
 
         override fun equals(other: Any?): Boolean {
@@ -189,6 +197,10 @@ sealed class Seq<V : Any> {
         override fun isEmpty(): Boolean = false
 
         override fun size(): Int = size
+
+        override fun component1(): V = head
+
+        override fun component2(): Seq<V> = tail
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true

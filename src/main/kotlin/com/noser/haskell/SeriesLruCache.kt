@@ -1,111 +1,78 @@
-package com.noser.haskell;
+package com.noser.haskell
 
-import org.jetbrains.annotations.NotNull;
+import java.util.function.Function
 
-import java.util.function.Function;
+import java.util.Objects.requireNonNull
 
-import static java.util.Objects.requireNonNull;
+class SeriesLruCache<K : Any, V : Any> private constructor(
+    values: Seq<Pair<K, V>>,
+    private val maxSize: Int
+) : LruCache<K, V> {
 
-@SuppressWarnings({"unused", "WeakerAccess"})
-public class SeriesLruCache<K, V> implements LruCache<K, V> {
+    private val values: Seq<Pair<K, V>>
 
-    private final Series<Pair<K, V>> values;
-
-    private final int maxSize;
-
-    public static <K, V> LruCache<K, V> withSize(int maxSize) {
-
-        return new SeriesLruCache<>(Series.empty(), maxSize);
+    init {
+        require(maxSize >= 1) { "Cache size must be > 0" }
+        this.values = values.take(maxSize)
     }
 
-    private SeriesLruCache(Series<Pair<K, V>> values, int maxSize) {
+    override fun get(key: K): Maybe<Pair<V, LruCache<K, V>>> {
 
-        if (maxSize < 1) {
-            throw new IllegalArgumentException("Cache size must be > 0");
-        }
-        this.values = values.take(maxSize);
-        this.maxSize = maxSize;
-    }
-
-    @NotNull
-    @Override
-    public Maybe<Pair<V, LruCache<K, V>>> get(@NotNull K key) {
-
-        requireNonNull(key);
-
-        Series<Pair<K, V>> beforeR = Series.empty();
-        Series<Pair<K, V>> remaining = values;
-
-        while (!remaining.isEmpty()) {
-            Pair<K, V> head = remaining.head();
-            if (head.first.equals(key)) {
-                Series<Pair<K, V>> updatedValues = beforeR.foldl(remaining.tail(), Series::prepend).prepend(head);
-                return Maybe.just(Pair.of(head.second, new SeriesLruCache<>(updatedValues, maxSize)));
+        tailrec fun go(visitedReversed: Seq<Pair<K, V>>, remaining: Seq<Pair<K, V>>): Maybe<Pair<V, LruCache<K, V>>> =
+            when {
+                remaining.isEmpty() -> Maybe.nothing()
+                remaining.head().first == key -> Maybe
+                    .just(remaining.head().second)
+                    .map {
+                        val (head, tail) = remaining
+                        val updated = visitedReversed.foldl(tail, Seq<Pair<K, V>>::prepend).prepend(head)
+                        Pair(it, SeriesLruCache(updated, maxSize))
+                    }
+                else -> go(visitedReversed.prepend(remaining.head()), remaining.tail())
             }
-            beforeR = beforeR.prepend(head);
-            remaining = remaining.tail();
+
+        return go(Seq.empty(), this.values)
+    }
+
+    override fun getOrLoad(key: K, loadFunction: Function<K, V>): Try<Pair<V, LruCache<K, V>>> {
+
+        requireNonNull(key)
+        requireNonNull(loadFunction)
+
+        return TODO()
+    }
+
+    override fun put(key: K, value: V): LruCache<K, V> {
+
+        requireNonNull(key)
+        requireNonNull(value)
+
+        return get(key)
+            .map { it.second }
+            .getOrElse(SeriesLruCache(values.prepend(Pair(key, value)), maxSize))
+    }
+
+    override fun evict(key: K): LruCache<K, V> {
+
+        requireNonNull(key)
+        return TODO()
+    }
+
+    override fun size(): Int {
+
+        return values.size()
+    }
+
+    override fun toString(): String {
+
+        return "SeriesLruCache$values"
+    }
+
+    companion object {
+
+        fun <K : Any, V : Any> withSize(maxSize: Int): LruCache<K, V> {
+
+            return SeriesLruCache(Seq.empty<Pair<K, V>>(), maxSize)
         }
-        // remaining is empty -> key is not contained
-        return Maybe.nothing();
-    }
-
-    @NotNull
-    @Override
-    public Outcome<Pair<V, LruCache<K, V>>> getOrLoad(@NotNull K key, @NotNull Function<K, V> loadFunction) {
-
-        requireNonNull(key);
-        requireNonNull(loadFunction);
-
-        return get(key)
-                .toOutcome()
-                .recover(t -> Outcome
-                        .of(() -> loadFunction.apply(key))
-                        .map(value -> {
-                            Series<Pair<K, V>> updatedValues = values.prepend(Pair.of(key, value));
-                            return Pair.of(value, new SeriesLruCache<>(updatedValues, maxSize));
-                        }));
-    }
-
-    @NotNull
-    @Override
-    public LruCache<K, V> put(@NotNull K key, @NotNull V value) {
-
-        requireNonNull(key);
-        requireNonNull(value);
-
-        Series<Pair<K, V>> updatedValues = get(key)
-                .map(pair -> ((SeriesLruCache<K, V>) pair.second).values
-                        .tail()
-                        .prepend(Pair.of(key, value)))
-                .getOrElse(() -> values)
-                .prepend(Pair.of(key, value));
-
-        return new SeriesLruCache<>(updatedValues, maxSize);
-    }
-
-    @NotNull
-    @Override
-    public LruCache<K, V> evict(@NotNull K key) {
-
-        requireNonNull(key);
-        return get(key)
-                .map(pair -> {
-                    SeriesLruCache<K, V> cache = (SeriesLruCache<K, V>) pair.second;
-                    Series<Pair<K, V>> updatedValues = cache.values.tail();
-                    return new SeriesLruCache<>(updatedValues, maxSize);
-                })
-                .getOrElse(() -> this);
-    }
-
-    @Override
-    public int size() {
-
-        return values.size();
-    }
-
-    @Override
-    public String toString() {
-
-        return "SeriesLruCache" + values;
     }
 }

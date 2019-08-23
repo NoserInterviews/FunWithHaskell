@@ -1,5 +1,6 @@
 package com.noser.haskell;
 
+import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Function;
@@ -24,7 +25,7 @@ public interface LruCache<K, V> {
      * Returns an Outcome of the {@link #get(K)} call, because the loading might fail.
      */
     @NotNull
-    Outcome<Pair<V, LruCache<K, V>>> getOrLoad(@NotNull K key, @NotNull Function<K, V> loadFunction);
+    Try<Pair<V, LruCache<K, V>>> getOrLoad(@NotNull K key, @NotNull Function<K, V> loadFunction);
 
     /**
      * Returns a Cache containing an entry associated with the given key that has the given value.
