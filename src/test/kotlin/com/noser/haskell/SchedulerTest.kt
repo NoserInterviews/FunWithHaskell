@@ -11,11 +11,12 @@ internal class SchedulerTest {
     @Test
     fun testMaxSeconds() {
 
-        val tasks: Seq<Task> = Cons(Task("1", 3L, 0L, {}),
-            Cons(Task("1", 7L, 0L, {}), empty())
+        val runnable = {}
+
+        val tasks: Seq<Task> = Cons(Task("1", 3L, 0L, runnable),
+            Cons(Task("1", 7L, 0L, runnable), empty())
         )
 
         assertEquals(105L,Scheduler.calcMaxSecs(tasks,5))
     }
-
 }

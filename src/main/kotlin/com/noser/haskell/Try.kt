@@ -4,6 +4,8 @@ sealed class Try<V : Any> {
 
     abstract fun <W : Any> flatMap(f: (V) -> Try<W>): Try<W>
 
+    abstract fun recover(supp: () -> Try<V>): Try<V>
+
     fun <W : Any> map(f: (V) -> W): Try<W> = flatMap { tryTo { f(it) } }
 
     companion object {
@@ -19,10 +21,14 @@ sealed class Try<V : Any> {
     private class Success<V : Any>(val v: V) : Try<V>() {
 
         override fun <W : Any> flatMap(f: (V) -> Try<W>): Try<W> = f(v)
+
+        override fun recover(supp: () -> Try<V>): Try<V> = this
     }
 
     private class Failure<V : Any>(val t: Throwable) : Try<V>() {
 
         override fun <W : Any> flatMap(f: (V) -> Try<W>): Try<W> = Failure(t)
+
+        override fun recover(supp: () -> Try<V>): Try<V> = supp()
     }
 }

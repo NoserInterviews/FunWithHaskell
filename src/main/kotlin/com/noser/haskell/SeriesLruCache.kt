@@ -1,9 +1,5 @@
 package com.noser.haskell
 
-import java.util.function.Function
-
-import java.util.Objects.requireNonNull
-
 class SeriesLruCache<K : Any, V : Any> private constructor(
     values: Seq<Pair<K, V>>,
     private val maxSize: Int
@@ -34,29 +30,19 @@ class SeriesLruCache<K : Any, V : Any> private constructor(
         return go(Seq.empty(), this.values)
     }
 
-    override fun getOrLoad(key: K, loadFunction: Function<K, V>): Try<Pair<V, LruCache<K, V>>> {
-
-        requireNonNull(key)
-        requireNonNull(loadFunction)
-
-        return TODO()
-    }
-
     override fun put(key: K, value: V): LruCache<K, V> {
-
-        requireNonNull(key)
-        requireNonNull(value)
 
         return get(key)
             .map { it.second }
             .getOrElse(SeriesLruCache(values.prepend(Pair(key, value)), maxSize))
     }
 
-    override fun evict(key: K): LruCache<K, V> {
-
-        requireNonNull(key)
-        return TODO()
-    }
+    override fun evict(key: K): LruCache<K, V> = get(key)
+        .map { (_, cache) ->
+            cache as SeriesLruCache<K, V>
+            SeriesLruCache(cache.values.tail(), maxSize)
+        }
+        .getOrElse(this)
 
     override fun size(): Int {
 
@@ -72,7 +58,7 @@ class SeriesLruCache<K : Any, V : Any> private constructor(
 
         fun <K : Any, V : Any> withSize(maxSize: Int): LruCache<K, V> {
 
-            return SeriesLruCache(Seq.empty<Pair<K, V>>(), maxSize)
+            return SeriesLruCache(Seq.empty(), maxSize)
         }
     }
 }
