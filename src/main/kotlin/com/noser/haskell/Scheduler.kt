@@ -51,8 +51,6 @@ class Scheduler(private val name: String) {
 
             check(period > 0) { "Period must be > 0" }
 
-            if (tasks.isEmpty()) return 0
-
             val (bestPhase, _) = maxExecutions(period, tasks).minBy { it.second }.getOrThrow()
 
             return bestPhase
@@ -61,9 +59,9 @@ class Scheduler(private val name: String) {
         private fun maxExecutions(period: Period, tasks: Seq<Task>): Seq<Pair<Phase, Int>> {
 
             val allSeconds = Seq.range(0, calcMaxSecs(tasks, period)-1)
-            val phases = Seq.range(0, period-1)
+            val allPhases = Seq.range(0, period-1)
 
-            return phases
+            return allPhases
                 .map { phase ->
                     val simulatedTasks = tasks.prepend(Task("n/a", period, phase) {})
                     val maxExecutions = allSeconds
