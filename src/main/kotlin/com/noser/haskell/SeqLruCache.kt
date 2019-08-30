@@ -1,6 +1,6 @@
 package com.noser.haskell
 
-class SeriesLruCache<K : Any, V : Any> private constructor(
+class SeqLruCache<K : Any, V : Any> private constructor(
     values: Seq<Pair<K, V>>,
     private val maxSize: Int
 ) : LruCache<K, V> {
@@ -22,7 +22,7 @@ class SeriesLruCache<K : Any, V : Any> private constructor(
                     .map {
                         val (head, tail) = remaining
                         val updated = visitedReversed.foldl(tail, Seq<Pair<K, V>>::prepend).prepend(head)
-                        Pair(it, SeriesLruCache(updated, maxSize))
+                        Pair(it, SeqLruCache(updated, maxSize))
                     }
                 else -> go(visitedReversed.prepend(remaining.head()), remaining.tail())
             }
@@ -34,13 +34,13 @@ class SeriesLruCache<K : Any, V : Any> private constructor(
 
         return get(key)
             .map { it.second }
-            .getOrElse(SeriesLruCache(values.prepend(Pair(key, value)), maxSize))
+            .getOrElse(SeqLruCache(values.prepend(Pair(key, value)), maxSize))
     }
 
     override fun evict(key: K): LruCache<K, V> = get(key)
         .map { (_, cache) ->
-            cache as SeriesLruCache<K, V>
-            SeriesLruCache(cache.values.tail(), maxSize)
+            cache as SeqLruCache<K, V>
+            SeqLruCache(cache.values.tail(), maxSize)
         }
         .getOrElse(this)
 
@@ -58,7 +58,7 @@ class SeriesLruCache<K : Any, V : Any> private constructor(
 
         fun <K : Any, V : Any> withSize(maxSize: Int): LruCache<K, V> {
 
-            return SeriesLruCache(Seq.empty(), maxSize)
+            return SeqLruCache(Seq.empty(), maxSize)
         }
     }
 }
