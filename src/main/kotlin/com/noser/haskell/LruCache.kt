@@ -5,7 +5,6 @@ interface LruCache<K : Any, V : Any> {
     /**
      * Looks for the entry associated with the given key.
      *
-     *
      * If found, the Cache is updated, thus it is returned as well.
      */
     operator fun get(key: K): Maybe<Pair<V, LruCache<K, V>>>
@@ -13,10 +12,8 @@ interface LruCache<K : Any, V : Any> {
     /**
      * Looks for the entry associated with the given key.
      *
-     *
      * If the entry is not found, calls the loadFunction in order to procure it and insert
      * it into the cache.
-     *
      *
      * Returns an Outcome of the [.get] call, because the loading might fail.
      */

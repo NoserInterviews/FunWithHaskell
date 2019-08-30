@@ -30,22 +30,14 @@ sealed class Seq<V : Any> {
     fun any(predicate: (V) -> Boolean): Boolean =
         foldl(false) { memo, v -> memo || predicate(v) }
 
-    fun forEach(consumer: (V) -> Unit) {
-        tailrec fun go(vs: Seq<V>) {
-            if (!vs.isEmpty()) {
-                consumer(vs.head())
-                go(vs.tail())
-            }
-        }
-        go(this)
-    }
+    fun forEach(consumer: (V) -> Unit) = foldl(Unit,{ _, v -> consumer(v)})
 
     fun <U : Any> map(f: (V) -> U): Seq<U> = foldr(empty()) { v, seq -> seq.prepend(f(v)) }
 
     fun <U : Comparable<U>> maxBy(f: (V) -> U): Maybe<V> =
         if (isEmpty())
             Maybe.nothing()
-        else Maybe.maybe(
+        else Maybe.just(
             tail()
                 .foldl(Pair(head(), f(head()))) { pair, v ->
                     val fV = f(v)
@@ -56,7 +48,7 @@ sealed class Seq<V : Any> {
     fun <U : Comparable<U>> minBy(f: (V) -> U): Maybe<V> =
         if (isEmpty())
             Maybe.nothing()
-        else Maybe.maybe(
+        else Maybe.just(
             tail()
                 .foldl(Pair(head(), f(head()))) { pair, v ->
                     val fV = f(v)
@@ -90,16 +82,15 @@ sealed class Seq<V : Any> {
 
     fun <U> foldl(init: U, f: (U, V) -> U): U {
 
-        tailrec fun go(memo: U, vs: Seq<V>): U =
+        tailrec fun go(memo: U, rem: Seq<V>): U =
             when {
-                vs.isEmpty() -> memo
-                else -> go(f(memo, vs.head()), vs.tail())
+                rem.isEmpty() -> memo
+                else -> go(f(memo, rem.head()), rem.tail())
             }
 
         return go(init, this)
     }
 
-    /** CHECKOUT */
     override fun toString(): String {
 
         val cutoff = 5
