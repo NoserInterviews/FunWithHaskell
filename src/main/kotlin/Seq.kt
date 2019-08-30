@@ -60,6 +60,23 @@ sealed class Seq<V : Any> {
             }
             return res
         }
+
+
+
+
+
+        fun <U, V : Any> foldr(init : U, f : (V,U) -> U, vs : Seq<V>) : U {
+
+            return when {
+                vs.isEmpty() -> init
+                else -> f(vs.head(), foldr(init,f,vs.tail()))
+            }
+        }
+
+
+
+
+
     }
 
     private class Empty<V : Any> : Seq<V>() {

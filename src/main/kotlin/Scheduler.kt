@@ -37,11 +37,7 @@ class Scheduler(private val name: String) {
         println("$epochSecs")
         tasks
             .filter { shouldExecute(epochSecs, it) }
-            .forEach {
-                print("Executing $it...")
-                it.runnable()
-                println("done")
-            }
+            .forEach { it.runnable() }
 
         println()
     }
